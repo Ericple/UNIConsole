@@ -1,0 +1,1 @@
+﻿Ladies and Gentlemen, welcome to {arrivalCity}. The local time is {localHour} {localMinute}. {weatherArrival} Please remain seated until the aircraft arrives at the gate. You are reminded to keep all electronic devices switched off until you have entered the airport terminal. Thank you {for flying with} {airline} {!}

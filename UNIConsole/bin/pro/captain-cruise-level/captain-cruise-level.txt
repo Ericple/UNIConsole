@@ -1,0 +1,1 @@
+﻿Ladies and gentlemen, from the cockpit - just to let you know what we've reached our cruise level of {flightLevel} and we're not anticipating any major delays so expect to arrive {in} {arrivalCity} on time as planned. As the cabin crew make their way around the aircraft please make sure the aisles are clear of any items and I invite you to sit back, relax and enjoy the flight.
