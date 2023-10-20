@@ -51,17 +51,13 @@ namespace UNIConsole
         /// <param name="logToConsole"></param>
         public static void SendBytesOverIpc(byte[] msg, bool logToConsole = false)
         {
+            Console.WriteLine(Encoding.UTF8.GetString(msg));
             Task.Factory.StartNew(() =>
             {
                 try
                 {
-                    if(logToConsole) Console.WriteLine(Encoding.UTF8.GetString(msg));
-                    Console.WriteLine(Encoding.UTF8.GetString(msg));
                     var pipeClient = new NamedPipeClientStream("unipipe_get");
-                    //var dPipeClient = new NamedPipeClientStream("unipipe_debug");
                     pipeClient.Connect(10);
-                    //dPipeClient.Connect(10);
-                    //dPipeClient.Write(msg, 0, msg.Length);
                     pipeClient.Write(msg, 0, msg.Length);
                 }
                 catch
@@ -73,8 +69,6 @@ namespace UNIConsole
             {
                 try
                 {
-                    if (logToConsole) Console.WriteLine(Encoding.UTF8.GetString(msg));
-                    Console.WriteLine(Encoding.UTF8.GetString(msg));
                     var dPipeClient = new NamedPipeClientStream("unipipe_debug");
                     dPipeClient.Connect(10);
                     dPipeClient.Write(msg, 0, msg.Length);

@@ -140,11 +140,12 @@ namespace UNIConsole.FlightMonitor
                 _cabinDoorDisArmed = true;
             }
         }
-        void StartVoiceEngine(int enable)
+        private void StartVoiceEngine(int enable)
         {
             if (enable != 1) return;
+            IpcLog($"Voice Recognition started, given param: {enable}");
             var infoReq = new CultureInfo("zh-CN");
-            foreach (RecognizerInfo info in SpeechRecognitionEngine.InstalledRecognizers())
+            foreach (var info in SpeechRecognitionEngine.InstalledRecognizers())
             {
                 if (!info.Culture.Equals(infoReq)) continue;
                 _speechRecognitionEngine = new SpeechRecognitionEngine(info);
@@ -260,13 +261,13 @@ namespace UNIConsole.FlightMonitor
                                 _payload = FSUIPCConnection.PayloadServices;
                                 Log(FlightLogItemType.Normal, $"Flight is being monitored. you are at {_phase} phase.", 0);
                                 IpcMessage($"Flying {AcData.AircraftType} on {FSVerions[SimData.FSVersion - 1]}");
-                                StartVoiceEngine(_voiceEngEnable);
                                 if (_voiceEngEnable == 1) _welcomePlayer.Play();
                                 _connectionChecked = true;
                             }
                             catch (Exception e)
                             {
-                                IpcMessage(e.Message);
+                                IpcLog("Error269: "+JsonConvert.SerializeObject(e));
+                                Thread.Sleep(10000);
                                 continue;
                             }
                         }
@@ -274,7 +275,6 @@ namespace UNIConsole.FlightMonitor
                         {
                             _payload = FSUIPCConnection.PayloadServices;
                             Log(FlightLogItemType.Normal, $"Flight is being monitored. you are at {_phase} phase.", 0);
-                            StartVoiceEngine(_voiceEngEnable);
                             if (_voiceEngEnable == 1) _welcomePlayer.Play();
                             _connectionChecked = true;
                         }
@@ -289,7 +289,7 @@ namespace UNIConsole.FlightMonitor
                     }
                     catch(Exception e)
                     {
-                        IpcMessage(e.Message);
+                        IpcLog("Error292: "+JsonConvert.SerializeObject(e));
                     }
                 }
             });
@@ -300,16 +300,25 @@ namespace UNIConsole.FlightMonitor
                 {
                     while (true)
                     {
-                        ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes("logstart"));
-                        Thread.Sleep(100);
-                        for(int i = 0;i<_flightLog.Logs.Count;i++)
+                        try
                         {
-                            ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes($"log*[{_flightLog.Logs[i].Time}] " + _flightLog.Logs[i].LogContent));
+                            ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes("logstart"));
                             Thread.Sleep(100);
+                            foreach (var log in _flightLog.Logs.ToArray())
+                            {
+                                ServiceServer.SendBytesOverIpc(
+                                    Encoding.UTF8.GetBytes($"log*[{log.Time}] " + log.LogContent));
+                                Thread.Sleep(100);
+                            }
+
+                            Thread.Sleep(100);
+                            ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes("logend"));
+                            Thread.Sleep(5000);
                         }
-                        Thread.Sleep(100);
-                        ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes("logend"));
-                        Thread.Sleep(5000);
+                        catch (Exception e)
+                        {
+                            IpcLog($"Error321: {JsonConvert.SerializeObject(e)}");
+                        }
                     }
                 });
             }
@@ -317,8 +326,15 @@ namespace UNIConsole.FlightMonitor
             {
                 while (true)
                 {
-                    IpcJson(JsonConvert.SerializeObject(AcData.ToInfo()));
-                    Thread.Sleep(5000);
+                    try
+                    {
+                        IpcLog(JsonConvert.SerializeObject(AcData.ToInfo()));
+                        Thread.Sleep(5000);
+                    }
+                    catch (Exception e)
+                    {
+                        IpcLog($"Error337: {JsonConvert.SerializeObject(e)}");
+                    }
                 }
             });
         }
@@ -328,7 +344,7 @@ namespace UNIConsole.FlightMonitor
             Log(FlightLogItemType.Normal, message, 0);
         }
 
-        private static void IpcJson(string json)
+        private static void IpcLog(string json)
         {
             ServiceServer.SendBytesOverIpc(Encoding.UTF8.GetBytes(json));
         }
@@ -337,11 +353,11 @@ namespace UNIConsole.FlightMonitor
             _phase = initialPhase;
             _safetyPlayer = new SoundPlayer
             {
-                SoundLocation = Environment.CurrentDirectory + "\\soundpack\\" + soundPackName + "\\fa\\safty_ins.wav"
+                SoundLocation = Environment.CurrentDirectory + @"\soundpack\" + soundPackName + @"\fa\safty_ins.wav"
             };
             _welcomePlayer = new SoundPlayer
             {
-                SoundLocation = Environment.CurrentDirectory + "\\soundpack\\" + soundPackName + "\\fa\\welcome_music.wav"
+                SoundLocation = Environment.CurrentDirectory + @"\soundpack\" + soundPackName + @"\fa\welcome_music.wav"
             };
             _reqUrl = reqUrl;
             if(forceSyncTime == 1) SimTimeHelper.SetToCurrent();
@@ -734,9 +750,9 @@ namespace UNIConsole.FlightMonitor
                     _flightLog.LandingLightScore -= 0.5;
                 }
             }
-            catch(Exception ex)
+            catch(Exception e)
             {
-                IpcMessage("Error occured:"+ex);
+                IpcLog("Error739:"+JsonConvert.SerializeObject(e));
             }
             
         }
@@ -781,9 +797,9 @@ namespace UNIConsole.FlightMonitor
                 fs.Close();
                 IpcMessage($"Flight log has been generated in {AppDomain.CurrentDomain.BaseDirectory}");
             }
-            catch(Exception ex)
+            catch(Exception e)
             {
-                IpcMessage($"Error on submit: {ex.Message}");
+                IpcLog($"Error on submit: {JsonConvert.SerializeObject(e)}");
             }
         }
     }
