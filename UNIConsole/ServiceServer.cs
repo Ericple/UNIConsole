@@ -58,10 +58,10 @@ namespace UNIConsole
                     if(logToConsole) Console.WriteLine(Encoding.UTF8.GetString(msg));
                     Console.WriteLine(Encoding.UTF8.GetString(msg));
                     var pipeClient = new NamedPipeClientStream("unipipe_get");
-                    var dPipeClient = new NamedPipeClientStream("unipipe_debug");
+                    //var dPipeClient = new NamedPipeClientStream("unipipe_debug");
                     pipeClient.Connect(10);
-                    dPipeClient.Connect(10);
-                    dPipeClient.Write(msg, 0, msg.Length);
+                    //dPipeClient.Connect(10);
+                    //dPipeClient.Write(msg, 0, msg.Length);
                     pipeClient.Write(msg, 0, msg.Length);
                 }
                 catch
@@ -69,7 +69,21 @@ namespace UNIConsole
                     // ignored
                 }
             });
-            
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    if (logToConsole) Console.WriteLine(Encoding.UTF8.GetString(msg));
+                    Console.WriteLine(Encoding.UTF8.GetString(msg));
+                    var dPipeClient = new NamedPipeClientStream("unipipe_debug");
+                    dPipeClient.Connect(10);
+                    dPipeClient.Write(msg, 0, msg.Length);
+                }
+                catch
+                {
+                    // ignored
+                }
+            });
         }
     }
 }
