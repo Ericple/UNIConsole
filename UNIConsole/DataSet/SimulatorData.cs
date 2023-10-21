@@ -40,7 +40,7 @@ namespace UNIConsole.DataSet
                 PauseIndicator = PauseIndicator != 0,
                 FrameRate = ValueHelper.FrameRate(FrameRate),
                 SimulationRate = ValueHelper.SimulationRate(SimulationRate),
-                TurblencePrecentage = 100 * WindTurbulence / 255
+                TurblencePrecentage = WindTurbulence / 2.55
             };
         }
     }

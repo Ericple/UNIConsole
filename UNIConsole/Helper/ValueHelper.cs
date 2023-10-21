@@ -49,6 +49,7 @@ namespace UNIConsole.Helper
         }
         public static ushort FrameRate(ushort value)
         {
+            if (value == 0) return 0;
             return (ushort)(32768 / value);
         }
         public static double GroundSpeed(uint value)
